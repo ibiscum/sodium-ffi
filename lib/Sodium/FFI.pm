@@ -2,7 +2,7 @@ package Sodium::FFI;
 use strict;
 use warnings;
 
-our $VERSION = '0.008';
+our $VERSION = '0.007';
 
 use Carp qw(croak);
 use Exporter qw(import);
@@ -14,28 +14,61 @@ use Sub::Util qw(set_subname);
 
 # these are the methods we can easily attach
 our @EXPORT_OK = qw(
-    randombytes_random randombytes_uniform
-    sodium_version_string sodium_library_version_minor sodium_base64_encoded_len
-    crypto_aead_aes256gcm_keygen crypto_aead_chacha20poly1305_keygen
-    crypto_aead_chacha20poly1305_ietf_keygen crypto_auth_keygen
+    randombytes_random 
+    randombytes_uniform
+    sodium_version_string
+    sodium_library_version_minor
+    sodium_base64_encoded_len
+    crypto_aead_aes256gcm_keygen
+    crypto_aead_chacha20poly1305_keygen
+    crypto_aead_chacha20poly1305_ietf_keygen
+    crypto_auth_keygen
 );
 
 # add the various C Constants
 push @EXPORT_OK, qw(
-    crypto_auth_BYTES crypto_auth_KEYBYTES
-    SODIUM_VERSION_STRING SIZE_MAX randombytes_SEEDBYTES SODIUM_LIBRARY_MINIMAL
-    SODIUM_LIBRARY_VERSION_MAJOR SODIUM_LIBRARY_VERSION_MINOR
-    sodium_base64_VARIANT_ORIGINAL sodium_base64_VARIANT_ORIGINAL_NO_PADDING
-    sodium_base64_VARIANT_URLSAFE sodium_base64_VARIANT_URLSAFE_NO_PADDING
-    crypto_aead_aes256gcm_KEYBYTES crypto_aead_aes256gcm_NPUBBYTES crypto_aead_aes256gcm_ABYTES
+    crypto_auth_BYTES
+    crypto_auth_KEYBYTES
+    crypto_auth_PRIMITIVE
+    crypto_auth_hmacsha256_BYTES
+    crypto_auth_hmacsha256_KEYBYTES
+    crypto_auth_hmacsha512_BYTES
+    crypto_auth_hmacsha512_KEYBYTES
+    crypto_auth_hmacsha512256_BYTES
+    crypto_auth_hmacsha512256_KEYBYTES
+    SIZE_MAX
+    randombytes_SEEDBYTES
+    SODIUM_VERSION_STRING
+    SODIUM_LIBRARY_MINIMAL
+    SODIUM_LIBRARY_VERSION_MAJOR 
+    SODIUM_LIBRARY_VERSION_MINOR
+    sodium_base64_VARIANT_ORIGINAL 
+    sodium_base64_VARIANT_ORIGINAL_NO_PADDING
+    sodium_base64_VARIANT_URLSAFE 
+    sodium_base64_VARIANT_URLSAFE_NO_PADDING
+    crypto_aead_aes256gcm_KEYBYTES
+    crypto_aead_aes256gcm_NPUBBYTES
+    crypto_aead_aes256gcm_ABYTES
     HAVE_AEAD_DETACHED HAVE_AESGCM
-    crypto_aead_chacha20poly1305_KEYBYTES crypto_aead_chacha20poly1305_NPUBBYTES
+    crypto_aead_chacha20poly1305_KEYBYTES
+    crypto_aead_chacha20poly1305_NPUBBYTES
     crypto_aead_chacha20poly1305_ABYTES
-    crypto_aead_chacha20poly1305_IETF_KEYBYTES crypto_aead_chacha20poly1305_IETF_NPUBBYTES
+    crypto_aead_chacha20poly1305_IETF_KEYBYTES 
+    crypto_aead_chacha20poly1305_IETF_NPUBBYTES
     crypto_aead_chacha20poly1305_IETF_ABYTES
-    crypto_sign_SEEDBYTES crypto_sign_BYTES crypto_sign_SECRETKEYBYTES crypto_sign_PUBLICKEYBYTES
-    crypto_box_SEALBYTES crypto_box_PUBLICKEYBYTES crypto_box_SECRETKEYBYTES
-    crypto_box_MACBYTES crypto_box_NONCEBYTES crypto_box_SEEDBYTES crypto_box_BEFORENMBYTES
+    crypto_sign_SEEDBYTES 
+    crypto_sign_BYTES 
+    crypto_sign_SECRETKEYBYTES 
+    crypto_sign_PUBLICKEYBYTES
+    crypto_box_SEEDBYTES
+    crypto_box_PUBLICKEYBYTES
+    crypto_box_SECRETKEYBYTES
+    crypto_box_NONCEBYTES
+    crypto_box_SEALBYTES
+    crypto_box_MACBYTES 
+    crypto_box_BEFORENMBYTES
+    crypto_box_MESSAGEBYTES_MAX
+    crypto_box_PRIMITIVE
 );
 
 our $ffi;
@@ -43,6 +76,7 @@ BEGIN {
     $ffi = FFI::Platypus->new(api => 1, lib => Alien::Sodium->dynamic_libs);
     $ffi->bundle();
 }
+
 # All of these functions don't need to be gated by version.
 $ffi->attach('randombytes_random' => [] => 'uint32');
 $ffi->attach('randombytes_uniform' => ['uint32'] => 'uint32');
@@ -72,9 +106,19 @@ sub crypto_auth_keygen {
 }
 
 our %function = (
+	# const char *
+	# crypto_auth_primitive(void);
+	'crypto_auth_primitive' => [
+	    [] => 'string',
+	    sub {
+	        my ($xsub) = @_;
+	        my $ret = $xsub->();
+	        return $ret;
+	    }
+	],
+
     # int
-    # crypto_auth(unsigned char *out, const unsigned char *in,
-    #     unsigned long long inlen, const unsigned char *k);
+    # crypto_auth(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
     'crypto_auth' => [
         ['string', 'string', 'size_t', 'string'] => 'int',
         sub {
@@ -95,8 +139,7 @@ our %function = (
     ],
 
     # int
-    # crypto_auth_verify(const unsigned char *h, const unsigned char *in,
-    #     unsigned long long inlen, const unsigned char *k);
+    # crypto_auth_verify(const unsigned char *h, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
     'crypto_auth_verify' => [
         ['string', 'string', 'size_t', 'string'] => 'int',
         sub {

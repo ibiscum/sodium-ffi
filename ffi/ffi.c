@@ -42,6 +42,13 @@ ffi_pl_bundle_constant(const char* package, ffi_platypus_constant_t* c)
     /* Crypto Generics */
     _uint(crypto_auth_BYTES);
     _uint(crypto_auth_KEYBYTES);
+    _str(crypto_auth_PRIMITIVE);
+    _uint(crypto_auth_hmacsha256_BYTES);
+    _uint(crypto_auth_hmacsha256_KEYBYTES);
+    _uint(crypto_auth_hmacsha512_BYTES);
+    _uint(crypto_auth_hmacsha512_KEYBYTES);
+    _uint(crypto_auth_hmacsha512256_BYTES);
+    _uint(crypto_auth_hmacsha512256_KEYBYTES);
 
     /* AESGCM stuff */
     _sint(HAVE_AESGCM);
@@ -74,6 +81,15 @@ ffi_pl_bundle_constant(const char* package, ffi_platypus_constant_t* c)
     _uint(crypto_box_NONCEBYTES);
     _uint(crypto_box_SEEDBYTES);
     _uint(crypto_box_BEFORENMBYTES);
+    
+    // generic hash
+    _uint(crypto_generichash_BYTES_MIN);
+    _uint(crypto_generichash_BYTES_MAX);
+    _uint(crypto_generichash_BYTES);
+    _uint(crypto_generichash_KEYBYTES_MIN);
+    _uint(crypto_generichash_KEYBYTES_MAX);
+    _uint(crypto_generichash_KEYBYTES);
+    _uint(crypto_generichash_PRIMITIVE);
 }
 
 void
