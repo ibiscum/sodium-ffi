@@ -90,6 +90,12 @@ ffi_pl_bundle_constant(const char* package, ffi_platypus_constant_t* c)
     _uint(crypto_generichash_KEYBYTES_MAX);
     _uint(crypto_generichash_KEYBYTES);
     _uint(crypto_generichash_PRIMITIVE);
+    
+    // crypto hash
+    _uint(crypto_hash_BYTES);
+    _uint(crypto_hash_sha256_BYTES);
+    _uint(crypto_hash_sha512_BYTES);
+    _str(crypto_hash_PRIMITIVE);
 }
 
 void
