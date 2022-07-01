@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup Perl environment
-      - uses: shogo82148/actions-setup-perl@v1.16.1
+        uses: shogo82148/actions-setup-perl@v1.16.1
         with:
           perl-version: ${{ matrix.perl-version }}
       - name: perl -V
