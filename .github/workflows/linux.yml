@@ -28,9 +28,9 @@ jobs:
     container:
       image: perl:${{ matrix.perl-version }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Install cpanm
-      - run: apt-get install cpanminus
+      - uses: actions/checkout@v3
+      - name: Setup Perl environment
+      - uses: shogo82148/actions-setup-perl@v1.16.1
       - name: perl -V
         run: perl -V
       - name: Create a non-root user called "runner"
