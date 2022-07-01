@@ -26,6 +26,7 @@ my %WriteMakefileArgs = (
     "Cwd" => 0,
     "Exporter" => "5.57",
     "FFI::Platypus" => "1.00",
+    "FFI::C" => "0.11",
     "File::Basename" => 0,
     "File::ShareDir" => 0,
     "File::Spec" => 0,
