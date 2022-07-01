@@ -2,9 +2,18 @@ use strict;
 use warnings;
 use Test::More;
 use Sodium::FFI qw(
-    sodium_add sodium_bin2hex sodium_compare sodium_hex2bin sodium_increment
-    sodium_library_minimal sodium_pad sodium_sub sodium_unpad sodium_bin2base64
-    sodium_base642bin sodium_memcmp sodium_is_zero
+    sodium_add
+    sodium_bin2hex 
+    sodium_compare
+    sodium_hex2bin
+    sodium_increment
+    sodium_library_minimal
+    sodium_pad sodium_sub
+    sodium_unpad
+    sodium_bin2base64
+    sodium_base642bin
+    sodium_memcmp
+    sodium_is_zero
 );
 
 # diag("SIZE_MAX is: " . Sodium::FFI::SIZE_MAX);
