@@ -37,6 +37,6 @@ jobs:
       #   run: sudo adduser --disabled-password --gecos '' runner
       - name: Run Tests as non-root user "runner"
         run: |
-          chown -R runner:runner .
+          # chown -R runner:runner .
           runuser runner -c 'cpanm --notest --installdeps -v .'
           runuser runner -c 'cpanm --test-only -v .'
