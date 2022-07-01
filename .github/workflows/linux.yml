@@ -25,6 +25,8 @@ jobs:
           # - '5.14'
           # - '5.12'
           # - '5.10'
+    container:
+      image: perl:${{ matrix.perl-version }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup Perl environment
@@ -34,7 +36,7 @@ jobs:
       - name: perl -V
         run: perl -V
       - name: Create a non-root user called "runner"
-        run: adduser --disabled-password --gecos '' runner
+        run: sudo adduser --disabled-password --gecos '' runner
       - name: Run Tests as non-root user "runner"
         run: |
           chown -R runner:runner .
