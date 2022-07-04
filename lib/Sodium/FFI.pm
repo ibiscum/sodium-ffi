@@ -52,7 +52,27 @@ our @EXPORT_OK = qw(
 
 # add the various C Constants
 push @EXPORT_OK, qw(
-	crypto_auth_BYTES
+    crypto_aead_aes256gcm_KEYBYTES
+    crypto_aead_aes256gcm_NSECBYTES
+    crypto_aead_aes256gcm_NPUBBYTES
+    crypto_aead_aes256gcm_ABYTES
+    crypto_aead_aes256gcm_MESSAGEBYTES_MAX
+    crypto_aead_chacha20poly1305_KEYBYTES
+    crypto_aead_chacha20poly1305_NSECBYTES
+    crypto_aead_chacha20poly1305_NPUBBYTES
+    crypto_aead_chacha20poly1305_ABYTES
+    crypto_aead_chacha20poly1305_MESSAGEBYTES_MAX
+    crypto_aead_chacha20poly1305_IETF_KEYBYTES
+    crypto_aead_chacha20poly1305_IETF_NSECBYTES
+    crypto_aead_chacha20poly1305_IETF_NPUBBYTES
+    crypto_aead_chacha20poly1305_IETF_ABYTES
+    crypto_aead_chacha20poly1305_IETF_MESSAGEBYTES_MAX
+    crypto_aead_xchacha20poly1305_IETF_KEYBYTES
+    crypto_aead_xchacha20poly1305_IETF_NSECBYTES
+    crypto_aead_xchacha20poly1305_IETF_NPUBBYTES
+    crypto_aead_xchacha20poly1305_IETF_ABYTES
+    crypto_aead_xchacha20poly1305_IETF_MESSAGEBYTES_MAX
+    crypto_auth_BYTES
 	crypto_auth_KEYBYTES
 	crypto_auth_PRIMITIVE
 	crypto_auth_hmacsha256_BYTES
@@ -61,11 +81,33 @@ push @EXPORT_OK, qw(
 	crypto_auth_hmacsha512_KEYBYTES
 	crypto_auth_hmacsha512256_BYTES
 	crypto_auth_hmacsha512256_KEYBYTES
-    crypto_aead_aes256gcm_KEYBYTES
-    crypto_aead_aes256gcm_NPUBBYTES
-    crypto_aead_aes256gcm_ABYTES
+    crypto_box_SEEDBYTES
+    crypto_box_PUBLICKEYBYTES
+    crypto_box_SECRETKEYBYTES
+    crypto_box_NONCEBYTES
+    crypto_box_SEALBYTES
+    crypto_box_MACBYTES 
+    crypto_box_BEFORENMBYTES
+    crypto_box_MESSAGEBYTES_MAX
+    crypto_box_PRIMITIVE
+    crypto_hash_BYTES
+    crypto_hash_PRIMITIVE
     crypto_hash_sha256_BYTES
     crypto_hash_sha512_BYTES
+    crypto_kdf_BYTES_MIN
+    crypto_kdf_BYTES_MAX
+    crypto_kdf_CONTEXTBYTES
+    crypto_kdf_KEYBYTES
+    crypto_kdf_PRIMITIVE
+    crypto_kdf_blake2b_BYTES_MIN
+    crypto_kdf_blake2b_BYTES_MAX
+    crypto_kdf_blake2b_CONTEXTBYTES
+    crypto_kdf_blake2b_KEYBYTES
+    crypto_sign_SEEDBYTES 
+    crypto_sign_BYTES
+    crypto_sign_SECRETKEYBYTES
+    crypto_sign_PUBLICKEYBYTES
+    HAVE_AEAD_DETACHED HAVE_AESGCM
     randombytes_SEEDBYTES
 	SIZE_MAX
     SODIUM_VERSION_STRING
@@ -76,26 +118,6 @@ push @EXPORT_OK, qw(
     sodium_base64_VARIANT_ORIGINAL_NO_PADDING
     sodium_base64_VARIANT_URLSAFE 
     sodium_base64_VARIANT_URLSAFE_NO_PADDING
-    HAVE_AEAD_DETACHED HAVE_AESGCM
-    crypto_aead_chacha20poly1305_KEYBYTES
-    crypto_aead_chacha20poly1305_NPUBBYTES
-    crypto_aead_chacha20poly1305_ABYTES
-    crypto_aead_chacha20poly1305_IETF_KEYBYTES 
-    crypto_aead_chacha20poly1305_IETF_NPUBBYTES
-    crypto_aead_chacha20poly1305_IETF_ABYTES
-    crypto_sign_SEEDBYTES 
-    crypto_sign_BYTES 
-    crypto_sign_SECRETKEYBYTES 
-    crypto_sign_PUBLICKEYBYTES
-    crypto_box_SEEDBYTES
-    crypto_box_PUBLICKEYBYTES
-    crypto_box_SECRETKEYBYTES
-    crypto_box_NONCEBYTES
-    crypto_box_SEALBYTES
-    crypto_box_MACBYTES 
-    crypto_box_BEFORENMBYTES
-    crypto_box_MESSAGEBYTES_MAX
-    crypto_box_PRIMITIVE
 );
 
 our $ffi;
@@ -150,6 +172,17 @@ our %function = (
 	    }
 	],
 
+    # size_t
+    # crypto_auth_keybytes(void)
+    'crypto_auth_keybytes' => [
+	    [] => 'size_t',
+	    sub {
+	        my ($xsub) = @_;
+	        my $ret = $xsub->();
+	        return $ret;
+	    }
+	],
+
 	# const char *
 	# crypto_auth_primitive(void);
 	'crypto_auth_primitive' => [
@@ -166,66 +199,108 @@ our %function = (
 	'crypto_auth' => [
 		['string', 'string', 'size_t', 'string'] => 'int',
 		sub {
-	    		my ($xsub, $msg, $key) = @_;
-	    		my $msg_len = length($msg);
-	    		my $key_len = length($key);
+            my ($xsub, $msg, $key) = @_;
+	    	my $msg_len = length($msg);
+	    	my $key_len = length($key);
 	    
-			    unless($key_len == Sodium::FFI::crypto_auth_KEYBYTES) {
-                	croak("Secret key length should be crypto_auth_KEYBYTES bytes");
-                }
+			unless($key_len == Sodium::FFI::crypto_auth_KEYBYTES) {
+               	croak("Secret key length should be crypto_auth_KEYBYTES bytes");
+            }
 	    
-			    my $mac = "\0" x Sodium::FFI::crypto_auth_BYTES;
-	    		my $real_len = 0;
-	    		my $ret = $xsub->($mac, $msg, $msg_len, $key);
-	    		croak("Internal error") unless $ret == 0;
-	    		return $mac;
-		    }
+			my $mac = "\0" x Sodium::FFI::crypto_auth_BYTES;
+	    	my $real_len = 0;
+	    	my $ret = $xsub->($mac, $msg, $msg_len, $key);
+	    	croak("Internal error") unless $ret == 0;
+	    	return $mac;
+		}
     ],
     
 	# int
 	# crypto_auth_verify(const unsigned char *h, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
-    	'crypto_auth_verify' => [
-        	['string', 'string', 'size_t', 'string'] => 'int',
-        	sub {
-        	    my ($xsub, $mac, $msg, $key) = @_;
-        	    my $mac_len = length($mac);
-        	    my $msg_len = length($msg);
-        	    my $key_len = length($key);
-        	    my $SIZE_MAX = Sodium::FFI::SIZE_MAX;
+    'crypto_auth_verify' => [
+       	['string', 'string', 'size_t', 'string'] => 'int',
+       	sub {
+       	    my ($xsub, $mac, $msg, $key) = @_;
+       	    my $mac_len = length($mac);
+       	    my $msg_len = length($msg);
+       	    my $key_len = length($key);
+       	    my $SIZE_MAX = Sodium::FFI::SIZE_MAX;
 
-        	    unless ($key_len == Sodium::FFI::crypto_auth_KEYBYTES) {
-        	        croak("Secret key length should be crypto_auth_KEYBYTES bytes");
-        	    }
-        	    unless ($mac_len == Sodium::FFI::crypto_auth_BYTES) {
-        	        croak("authentication tag length should be crypto_auth_BYTES bytes");
-        	    }
+       	    unless ($key_len == Sodium::FFI::crypto_auth_KEYBYTES) {
+       	        croak("Secret key length should be crypto_auth_KEYBYTES bytes");
+       	    }
 
-        	    my $ret = $xsub->($mac, $msg, $msg_len, $key);
-        	    return 1 if $ret == 0;
-        	    return 0;
-        	}
-    	],
+       	    unless ($mac_len == Sodium::FFI::crypto_auth_BYTES) {
+       	        croak("authentication tag length should be crypto_auth_BYTES bytes");
+       	    }
 
-    	# int 
-    	# crypto_auth_hmacsha256(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
-    	'crypto_auth_hmacsha256' => [
-    	    ['string', 'string', 'size_t', 'string'] => 'int',
-    	    sub {
-    	        my ($xsub, $msg, $key) = @_;
-    	        my $msg_len = length($msg);
-    	        my $key_len = length($key);
+       	    my $ret = $xsub->($mac, $msg, $msg_len, $key);
+
+       	    return 1 if $ret == 0;
+       	    return 0;
+       	}
+   	],
+
+   	# int 
+   	# crypto_auth_hmacsha256(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
+   	'crypto_auth_hmacsha256' => [
+   	    ['string', 'string', 'size_t', 'string'] => 'int',
+   	    sub {
+   	        my ($xsub, $msg, $key) = @_;
+   	        my $msg_len = length($msg);
+   	        my $key_len = length($key);
 	
-	            unless($key_len == Sodium::FFI::crypto_auth_hmacsha256_KEYBYTES) {
-	                croak("Secret key length should be crypto_auth_hmacsha256_KEYBYTES bytes");
-	            }
+            unless($key_len == Sodium::FFI::crypto_auth_hmacsha256_KEYBYTES) {
+                croak("Secret key length should be crypto_auth_hmacsha256_KEYBYTES bytes");
+            }
 	
-	            my $mac = "\0" x Sodium::FFI::crypto_auth_hmacsha256_BYTES;
-	            my $real_len = 0;
-	            my $ret = $xsub->($mac, $msg, $msg_len, $key);
-	            croak("Internal error") unless $ret == 0;
-	            return $mac;
+            my $mac = "\0" x Sodium::FFI::crypto_auth_hmacsha256_BYTES;
+            my $real_len = 0;
+            my $ret = $xsub->($mac, $msg, $msg_len, $key);
+            croak("Internal error") unless $ret == 0;
+            return $mac;
 		}
 	],
+
+    # size_t
+    # crypto_auth_hmacsha256_bytes(void)
+    'crypto_auth_hmacsha256_bytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_auth_hmacsha256_keybytes(void)
+    'crypto_auth_hmacsha256_keybytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_auth_hmacsha256_statebytes(void)
+    'crypto_auth_hmacsha256_statebytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha256_init(crypto_auth_hmacsha256_state *state, const unsigned char *key, size_t keylen)
+    'crypto_auth_hmacsha256_init' => [
+        [] => 'int',
+
+    ],
 
     # int
     # crypto_aead_chacha20poly1305_ietf_decrypt(
@@ -252,33 +327,33 @@ our %function = (
                 croak("Nonce length should be crypto_aead_chacha20poly1305_IETF_NPUBBYTES bytes");
             }
           
-	    unless($key_len == Sodium::FFI::crypto_aead_chacha20poly1305_IETF_KEYBYTES) {
+	        unless($key_len == Sodium::FFI::crypto_aead_chacha20poly1305_IETF_KEYBYTES) {
                 croak("Secret key length should be crypto_aead_chacha20poly1305_IETF_KEYBYTES bytes");
             }
           
-	    if ($ciphertext_len < Sodium::FFI::crypto_aead_chacha20poly1305_IETF_ABYTES) {
+	        if ($ciphertext_len < Sodium::FFI::crypto_aead_chacha20poly1305_IETF_ABYTES) {
                 croak("cipher text length not right");
             }
           
-	    my $msg_len = $ciphertext_len;
+	        my $msg_len = $ciphertext_len;
             if ($msg_len > $SIZE_MAX) {
                 croak("Message length greater than max size");
             }
           
-	    my $msg = "\0" x $msg_len;
+	        my $msg = "\0" x $msg_len;
             my $real_len = 0;
             my $ret = $xsub->($msg, \$real_len, undef, $ciphertext, $ciphertext_len, $ad, $ad_len, $nonce, $key);
             croak("Internal error") unless $ret == 0;
           
-	    if ($real_len <= 0 || $real_len >= $SIZE_MAX || $real_len > $msg_len) {
+	        if ($real_len <= 0 || $real_len >= $SIZE_MAX || $real_len > $msg_len) {
                 croak("Invalid resultant length");
             }
           
-	    if ($real_len >= $SIZE_MAX || $real_len > $msg_len) {
+	        if ($real_len >= $SIZE_MAX || $real_len > $msg_len) {
                 croak("arithmetic overflow");
             }
           
-	    return substr($msg, 0, $real_len);
+	        return substr($msg, 0, $real_len);
         }
     ],
 
@@ -307,11 +382,11 @@ our %function = (
                 croak("Nonce length should be crypto_aead_chacha20poly1305_IETF_NPUBBYTES bytes");
             }
           
-	    unless($key_len == Sodium::FFI::crypto_aead_chacha20poly1305_IETF_KEYBYTES) {
+	        unless($key_len == Sodium::FFI::crypto_aead_chacha20poly1305_IETF_KEYBYTES) {
                 croak("Secret key length should be crypto_aead_chacha20poly1305_IETF_KEYBYTES bytes");
             }
           
-	    if ($SIZE_MAX - $msg_len <= Sodium::FFI::crypto_aead_chacha20poly1305_IETF_ABYTES) {
+	        if ($SIZE_MAX - $msg_len <= Sodium::FFI::crypto_aead_chacha20poly1305_IETF_ABYTES) {
                 croak("arithmetic overflow");
             }
 
@@ -321,11 +396,11 @@ our %function = (
             my $ret = $xsub->($ciphertext, \$real_len, $msg, $msg_len, $ad, $ad_len, undef, $nonce, $key);
             croak("Internal error") unless $ret == 0;
           
-	    if ($real_len <= 0 || $real_len > $SIZE_MAX || $real_len > $ciphertext_len) {
+	        if ($real_len <= 0 || $real_len > $SIZE_MAX || $real_len > $ciphertext_len) {
                 croak("Invalid resultant length");
             }
           
-	    return substr($ciphertext, 0, $real_len);
+	        return substr($ciphertext, 0, $real_len);
         }
     ],
 
@@ -641,7 +716,37 @@ our %function = (
 			return $ret;
 		}
 	],
+
+    # int
+    # crypto_hash(unsigned char *out, const unsigned char *in, unsigned long long inlen)
+    'crypto_hash' => [
+        ['string', 'string', 'size_t'] => 'int',
+        sub {
+            my ($xsub, $data) = @_;
+            my $len = length($data);
+            
+            my $digest = "\0" x Sodium::FFI::crypto_hash_BYTES;
+            
+            my $ret = $xsub->($digest, $data, $len);
+
+            if ($ret != 0) {
+    	            croak("Some internal error happened");
+    	    }
+            return($digest);
+        }
+    ],
     
+    # const char *
+    # crypto_hash_primitive(void)
+    'crypto_hash_primitive' => [
+        [] =>'string',
+		sub {
+			my ($xsub) = @_;
+			my $ret = $xsub->();
+			return $ret;
+		}
+    ],
+
 	# size_t
 	# crypto_hash_sha256_bytes(void)
 	'crypto_hash_sha256_bytes' => [

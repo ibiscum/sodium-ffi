@@ -96,6 +96,17 @@ ffi_pl_bundle_constant(const char* package, ffi_platypus_constant_t* c)
     _uint(crypto_hash_sha256_BYTES);
     _uint(crypto_hash_sha512_BYTES);
     _str(crypto_hash_PRIMITIVE);
+
+    // crypto kdf
+    _uint(crypto_kdf_BYTES_MIN);
+    _uint(crypto_kdf_BYTES_MAX);
+    _uint(crypto_kdf_CONTEXTBYTES);
+    _uint(crypto_kdf_KEYBYTES);
+    _str(crypto_kdf_PRIMITIVE);
+    _uint(crypto_kdf_blake2b_BYTES_MIN);
+    _uint(crypto_kdf_blake2b_BYTES_MAX);
+    _uint(crypto_kdf_blake2b_CONTEXTBYTES);
+    _uint(crypto_kdf_blake2b_KEYBYTES);
 }
 
 void
