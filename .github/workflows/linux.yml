@@ -25,20 +25,21 @@ jobs:
           # - '5.14'
           # - '5.12'
           # - '5.10'
-    container:
-      image: perl:${{ matrix.perl-version }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup Perl environment
-      - uses: shogo82148/actions-setup-perl@v1.16.1
+        uses: shogo82148/actions-setup-perl@v1.16.1
         with:
           perl-version: ${{ matrix.perl-version }}
       - name: perl -V
         run: perl -V
-      - name: Create a non-root user called "runner"
-        run: adduser --disabled-password --gecos '' runner
+      # - name: Create a non-root user called "runner"
+      #   run: sudo adduser --disabled-password --gecos '' runner
       - name: Run Tests as non-root user "runner"
         run: |
-          chown -R runner:runner .
-          runuser runner -c 'cpanm --notest --installdeps -v .'
-          runuser runner -c 'cpanm --test-only -v .'
+          # chown -R runner:runner .
+          # runuser runner -c 'cpanm --notest --installdeps -v .'
+          # runuser runner -c 'cpanm --test-only -v .'
+          cpanm --notest --installdeps -v .
+          cpanm --test-only -v .
+           
