@@ -2,12 +2,17 @@ use strict;
 use warnings;
 use Test::More;
 use Sodium::FFI qw(
-    crypto_sign_PUBLICKEYBYTES crypto_sign_SECRETKEYBYTES
-    crypto_sign_BYTES crypto_sign_SEEDBYTES
-    crypto_sign_keypair crypto_sign_seed_keypair
+    crypto_sign_PUBLICKEYBYTES
+    crypto_sign_SECRETKEYBYTES
+    crypto_sign_BYTES
+    crypto_sign_SEEDBYTES
+    crypto_sign_keypair
+    crypto_sign_seed_keypair
+    crypto_sign 
+    crypto_sign_open
+    crypto_sign_detached
+    crypto_sign_verify_detached
     randombytes_buf
-    crypto_sign crypto_sign_open
-    crypto_sign_detached crypto_sign_verify_detached
 );
 
 ok(crypto_sign_SECRETKEYBYTES, 'crypto_sign_SECRETKEYBYTES: got the constant');
