@@ -1,3 +1,5 @@
+[![linux](https://github.com/ibiscum/sodium-ffi/actions/workflows/linux.yml/badge.svg)](https://github.com/ibiscum/sodium-ffi/actions/workflows/linux.yml)
+
 # NAME
 
 Sodium::FFI - FFI implementation of libsodium
