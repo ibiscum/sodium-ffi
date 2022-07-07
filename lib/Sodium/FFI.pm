@@ -104,11 +104,19 @@ push @EXPORT_OK, qw(
     crypto_kdf_blake2b_BYTES_MAX
     crypto_kdf_blake2b_CONTEXTBYTES
     crypto_kdf_blake2b_KEYBYTES
-    crypto_sign_SEEDBYTES 
     crypto_sign_BYTES
-    crypto_sign_SECRETKEYBYTES
+    crypto_sign_SEEDBYTES
     crypto_sign_PUBLICKEYBYTES
-    HAVE_AEAD_DETACHED HAVE_AESGCM
+    crypto_sign_SECRETKEYBYTES
+    crypto_sign_MESSAGEBYTES_MAX
+    crypto_sign_PRIMITIVE
+    crypto_sign_ed25519_BYTES
+    crypto_sign_ed25519_SEEDBYTES
+    crypto_sign_ed25519_PUBLICKEYBYTES
+    crypto_sign_ed25519_SECRETKEYBYTES
+    crypto_sign_ed25519_MESSAGEBYTES_MAX
+    HAVE_AEAD_DETACHED
+    HAVE_AESGCM
     randombytes_SEEDBYTES
 	SIZE_MAX
     SODIUM_VERSION_STRING
@@ -956,6 +964,143 @@ our %function = (
         }
     ],
 
+    # size_t
+    # crypto_sign_statebytes(void)
+    'crypto_sign_statebytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_bytes(void)
+    'crypto_sign_bytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_seedbytes(void)
+    'crypto_sign_seedbytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_publickeybytes(void)
+    'crypto_sign_publickeybytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_secretkeybytes(void)
+    'crypto_sign_secretkeybytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_messagebytes_max(void)
+    'crypto_sign_messagebytes_max' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # const char *
+	# crypto_sign_primitive(void);
+	'crypto_sign_primitive' => [
+	    [] => 'string',
+	    sub {
+	        my ($xsub) = @_;
+	        my $ret = $xsub->();
+	        return $ret;
+	    }
+	],
+
+    # int
+	# crypto_sign_init(crypto_sign_state *state)
+	'crypto_sign_init' => [
+		['opaque'] => 'int',
+		sub {
+			my ($xsub, $state) = @_;
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+    	            croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
+    # int
+	# crypto_sign_update(crypto_sign_state *state, const unsigned char *m, unsigned long long mlen)
+	'crypto_sign_update' => [
+		['opaque', 'string', 'size_t'] => 'int',
+		sub {
+			my ($xsub, $state, $msg, $msg_len) = @_;
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+    	            croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
+    # int 
+    # crypto_sign_final_create(crypto_sign_state *state, unsigned char *sig, unsigned long long *siglen_p, const unsigned char *sk)
+    'crypto_sign_final_create' => [
+		['opaque', 'string', 'size_t*', 'string'] => 'int',
+		sub {
+			my ($xsub, $state, $sig, $siglen_p, $sk) = @_;
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+    	            croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
+    # int 
+    # crypto_sign_final_verify(crypto_sign_state *state, const unsigned char *sig, const unsigned char *pk)
+    'crypto_sign_final_verify' => [
+		['opaque', 'string', 'size_t'] => 'int',
+		sub {
+			my ($xsub, $state, $sig, $pk) = @_;
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+    	            croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
    	# int
    	# crypto_sign_keypair(unsigned char *pk, unsigned char *sk);
    	'crypto_sign_keypair' => [
@@ -995,37 +1140,43 @@ our %function = (
             return ($pubkey, $seckey);
         }
     ],
-
-    	# int
-    	# crypto_sign(unsigned char *sm, unsigned long long *smlen_p,
-    	#     const unsigned char *m, unsigned long long mlen,
-    	#     const unsigned char *sk);
-    	'crypto_sign' => [
-    	    ['string', 'size_t*', 'string', 'size_t', 'string'] => 'int',
-    	    sub {
-    	        my ($xsub, $msg, $key) = @_;
-    	        my $SIZE_MAX = Sodium::FFI::SIZE_MAX;
-    	        my $msg_len = length($msg);
-    	        my $key_len = length($key);
-    	        unless ($key_len == Sodium::FFI::crypto_sign_SECRETKEYBYTES) {
-    	            croak("Secret Key length must be crypto_sign_SECRETKEYBYTES in length");
-    	        }
-    	        if ($SIZE_MAX - $msg_len <= Sodium::FFI::crypto_sign_BYTES) {
-    	            croak("Arithmetic overflow");
-    	        }
-    	        my $real_len = 0;
-    	        my $signed_len = $msg_len + Sodium::FFI::crypto_sign_BYTES;
-    	        my $signed = "\0" x $signed_len;
-    	        my $ret = $xsub->($signed, \$real_len, $msg, $msg_len, $key);
-    	        if ($ret != 0) {
-    	            croak("Some internal error happened");
-    	        }
-    	        if ($real_len >= $SIZE_MAX || $real_len > $signed_len) {
-    	            croak("Arithmetic overflow");
-    	        }
-    	        return substr($signed, 0, $real_len);
+    
+    # int
+    # crypto_sign(unsigned char *sm, unsigned long long *smlen_p,
+    #     const unsigned char *m, unsigned long long mlen,
+    #     const unsigned char *sk);
+    'crypto_sign' => [
+        ['string', 'size_t*', 'string', 'size_t', 'string'] => 'int',
+        sub {
+            my ($xsub, $msg, $key) = @_;
+    	    my $SIZE_MAX = Sodium::FFI::SIZE_MAX;
+    	    my $msg_len = length($msg);
+    	    my $key_len = length($key);
+    	    
+            unless ($key_len == Sodium::FFI::crypto_sign_SECRETKEYBYTES) {
+    	        croak("Secret Key length must be crypto_sign_SECRETKEYBYTES in length");
     	    }
-    	],
+    	    
+            if ($SIZE_MAX - $msg_len <= Sodium::FFI::crypto_sign_BYTES) {
+    	        croak("Arithmetic overflow");
+    	    }
+    	    
+            my $real_len = 0;
+    	    my $signed_len = $msg_len + Sodium::FFI::crypto_sign_BYTES;
+    	    my $signed = "\0" x $signed_len;
+    	    my $ret = $xsub->($signed, \$real_len, $msg, $msg_len, $key);
+    	    
+            if ($ret != 0) {
+    	        croak("Some internal error happened");
+    	    }
+    	    
+            if ($real_len >= $SIZE_MAX || $real_len > $signed_len) {
+    	        croak("Arithmetic overflow");
+    	    }
+    	    
+            return substr($signed, 0, $real_len);
+    	}
+    ],
 
     # int
     # crypto_sign_detached(unsigned char *sig, unsigned long long *siglen_p,

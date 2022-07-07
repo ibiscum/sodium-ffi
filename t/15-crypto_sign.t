@@ -2,23 +2,63 @@ use strict;
 use warnings;
 use Test::More;
 use Sodium::FFI qw(
-    crypto_sign_PUBLICKEYBYTES
-    crypto_sign_SECRETKEYBYTES
     crypto_sign_BYTES
     crypto_sign_SEEDBYTES
-    crypto_sign_keypair
+    crypto_sign_PUBLICKEYBYTES
+    crypto_sign_SECRETKEYBYTES
+    crypto_sign_MESSAGEBYTES_MAX
+    crypto_sign_PRIMITIVE
+    crypto_sign_ed25519_BYTES
+    crypto_sign_ed25519_SEEDBYTES
+    crypto_sign_ed25519_PUBLICKEYBYTES
+    crypto_sign_ed25519_SECRETKEYBYTES
+    crypto_sign_ed25519_MESSAGEBYTES_MAX
+    crypto_sign_statebytes
+    crypto_sign_bytes
+    crypto_sign_seedbytes
+    crypto_sign_publickeybytes
+    crypto_sign_secretkeybytes
+    crypto_sign_messagebytes_max
+    crypto_sign_primitive
     crypto_sign_seed_keypair
+    crypto_sign_keypair
     crypto_sign 
     crypto_sign_open
     crypto_sign_detached
     crypto_sign_verify_detached
+    crypto_sign_init
+    crypto_sign_update
+    crypto_sign_final_create
+    crypto_sign_final_verify
     randombytes_buf
 );
 
-ok(crypto_sign_SECRETKEYBYTES, 'crypto_sign_SECRETKEYBYTES: got the constant');
 ok(crypto_sign_BYTES, 'crypto_sign_BYTES: got the constant');
-ok(crypto_sign_PUBLICKEYBYTES, 'crypto_sign_PUBLICKEYBYTES: got the constant');
 ok(crypto_sign_SEEDBYTES, 'crypto_sign_SEEDBYTES: got the constant');
+ok(crypto_sign_PUBLICKEYBYTES, 'crypto_sign_PUBLICKEYBYTES: got the constant');
+ok(crypto_sign_SECRETKEYBYTES, 'crypto_sign_SECRETKEYBYTES: got the constant');
+ok(crypto_sign_MESSAGEBYTES_MAX, 'crypto_sign_MESSAGEBYTES_MAX: got the constant');
+ok(crypto_sign_PRIMITIVE, 'crypto_sign_PRIMITIVE: got the constant');
+
+ok(crypto_sign_ed25519_BYTES, 'crypto_sign_ed25519_BYTES: got the constant');
+ok(crypto_sign_ed25519_SEEDBYTES, 'crypto_sign_ed25519_SEEDBYTES: got the constant');
+ok(crypto_sign_ed25519_PUBLICKEYBYTES, 'crypto_sign_ed25519_PUBLICKEYBYTES: got the constant');
+ok(crypto_sign_ed25519_SECRETKEYBYTES, 'crypto_sign_ed25519_SECRETKEYBYTES: got the constant');
+ok(crypto_sign_ed25519_MESSAGEBYTES_MAX, 'crypto_sign_ed25519_MESSAGEBYTES_MAX: got the constant');
+
+my $ok;
+
+$ok = crypto_sign_statebytes();
+ok($ok, 'crypto_sign_statebytes: got a result');
+
+$ok = crypto_sign_bytes();
+ok($ok, 'crypto_sign_bytes: got a result');
+
+$ok = crypto_sign_seedbytes();
+ok($ok, 'crypto_sign_seedbytes: got a result');
+
+$ok = crypto_sign_publickeybytes();
+ok($ok, 'crypto_sign_publickeybytes: got a result');
 
 # combined, no seed
 {

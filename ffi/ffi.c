@@ -68,10 +68,17 @@ ffi_pl_bundle_constant(const char* package, ffi_platypus_constant_t* c)
     _uint(crypto_aead_chacha20poly1305_IETF_ABYTES);
 
     /* Public key Crypt - Pub Key Signatures */
-    _uint(crypto_sign_PUBLICKEYBYTES);
-    _uint(crypto_sign_SECRETKEYBYTES);
     _uint(crypto_sign_BYTES);
     _uint(crypto_sign_SEEDBYTES);
+    _uint(crypto_sign_PUBLICKEYBYTES);
+    _uint(crypto_sign_SECRETKEYBYTES);
+    _uint(crypto_sign_MESSAGEBYTES_MAX);
+    _str(crypto_sign_PRIMITIVE);
+    _uint(crypto_sign_ed25519_BYTES);
+    _uint(crypto_sign_ed25519_SEEDBYTES);
+    _uint(crypto_sign_ed25519_PUBLICKEYBYTES);
+    _uint(crypto_sign_ed25519_SECRETKEYBYTES);
+    _uint(crypto_sign_ed25519_MESSAGEBYTES_MAX);
 
     /* crypto box */
     _uint(crypto_box_SEALBYTES);
