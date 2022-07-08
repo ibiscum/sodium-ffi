@@ -30,6 +30,7 @@ use Sodium::FFI qw(
     crypto_sign_update
     crypto_sign_final_create
     crypto_sign_final_verify
+    crypto_sign_ed25519ph_statebytes
     randombytes_buf
 );
 
@@ -59,6 +60,18 @@ ok($ok, 'crypto_sign_seedbytes: got a result');
 
 $ok = crypto_sign_publickeybytes();
 ok($ok, 'crypto_sign_publickeybytes: got a result');
+
+$ok = crypto_sign_secretkeybytes();
+ok($ok, 'crypto_sign_secretkeybytes: got a result');
+
+$ok = crypto_sign_messagebytes_max();
+ok($ok, 'crypto_sign_messagebytes_max: got a result');
+
+$ok = crypto_sign_primitive();
+ok($ok, 'crypto_sign_primitive: got a result');
+
+$ok = crypto_sign_ed25519ph_statebytes();
+ok($ok, 'crypto_sign_ed25519ph_statebytes: got a result');
 
 # combined, no seed
 {

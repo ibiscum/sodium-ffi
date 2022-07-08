@@ -14,24 +14,59 @@ use Path::Tiny qw(path);
 use Sub::Util qw(set_subname);
 
 {
-package Sodium::FFI::crypto_hash_sha256_state {
-	FFI::C->struct(hash_sha256_state_t => [
-		'state' => 'uint32[8]',
-	    'count'	=> 'uint64',
-		'buf' => 'uint8[64]'
-	]);
-}
-}
-
-package crypto_hash_sha512_state {
-	FFI::C->struct(hash_sha512_state_t => [
-		'state' => 'uint32[8]',
-	    'count'	=> 'uint64',
-		'buf' => 'uint8[64]'
-	]);
+    package Sodium::FFI::crypto_hash_sha256_state {
+	    FFI::C->struct(hash_sha256_state_t => [
+		    'state' => 'uint32[8]',
+	        'count'	=> 'uint64',
+		    'buf' => 'uint8[64]'
+	    ]);
+    }
 }
 
-my $crypto_hash_sha512_state = crypto_hash_sha512_state->new();
+{
+    package Sodium::FFI::crypto_hash_sha512_state {
+	    FFI::C->struct(hash_sha512_state_t => [
+		    'state' => 'uint32[8]',
+	        'count'	=> 'uint64',
+		    'buf' => 'uint8[64]'
+	    ]);
+    }
+}
+
+{
+    package Sodium::FFI::crypto_auth_hmacsha256_state {
+	    FFI::C->struct(auth_hmacsha256_state_t => [
+		    'ictx' => 'hash_sha256_state_t',
+	        'octx' => 'hash_sha256_state_t'
+	    ]);
+    }
+}
+
+{
+    package Sodium::FFI::crypto_auth_hmacsha512_state {
+	    FFI::C->struct(auth_hmacsha512_state_t => [
+		    'ictx' => 'hash_sha512_state_t',
+	        'octx' => 'hash_sha512_state_t'
+	    ]);
+    }
+}
+
+{
+    package Sodium::FFI::crypto_auth_hmacsha512256_state {
+	    FFI::C->struct(auth_hmacsha512256_state_t => [
+		    'ictx' => 'hash_sha512_state_t',
+	        'octx' => 'hash_sha512_state_t'
+	    ]);
+    }
+}
+
+{
+    package Sodium::FFI::crypto_sign_ed25519ph_state {
+	    FFI::C->struct(sign_ed25519ph_state_t => [
+		    'hs' => 'hash_sha512_state_t',
+	    ]);
+    }
+}
 
 # these are the methods we can easily attach
 our @EXPORT_OK = qw(
@@ -1257,6 +1292,17 @@ our %function = (
             my $ret = $xsub->($sig, $msg, $msg_len, $key);
             return 1 if ($ret == 0);
             return 0;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_ed25519ph_statebytes(void)
+    'crypto_sign_ed25519ph_statebytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
         }
     ],
 
