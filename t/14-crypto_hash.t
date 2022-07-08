@@ -1,6 +1,9 @@
 use strict;
 use warnings;
 use Test::More;
+use Data::Dumper qw(Dumper);
+use FFI::Platypus::Buffer qw( scalar_to_buffer buffer_to_scalar );
+use FFI::Platypus::Memory qw( malloc free );
 use Sodium::FFI qw(
     crypto_hash_BYTES
     crypto_hash_PRIMITIVE
@@ -12,6 +15,10 @@ use Sodium::FFI qw(
     crypto_hash_sha256_bytes
     crypto_hash_sha256_statebytes
     crypto_hash_sha256_init
+    crypto_hash_sha256_update
+    crypto_hash_sha256_final
+    crypto_hash_sha256_state
+    crypto_hash_sha256
     randombytes_buf
     sodium_bin2hex
 );
@@ -24,6 +31,7 @@ ok(crypto_hash_sha512_BYTES, 'crypto_hash_sha512_BYTES: got the constant');
 
 my $ok;
 my $msg;
+my $msg_len;
 my $dig;
 my $state;
 
@@ -43,13 +51,22 @@ $ok = crypto_hash_sha256_bytes();
 ok($ok, 'crypto_hash_sha256_bytes: got a result');
 
 $ok = crypto_hash_sha256_statebytes();
-print $ok . "\n";
 ok($ok, 'crypto_hash_sha256_statebytes: got a result');
 
-# $state = hash_sha256_state->new();
+$state = malloc(crypto_hash_sha256_statebytes());
 
-# $ok = crypto_hash_sha256_init($state);
-# print $ok . "\n";
-# ok($ok, 'crypto_hash_sha256_init: got a result');
+$ok = crypto_hash_sha256_init($state);
+ok($ok, 'crypto_hash_sha256_init: got a result');
+
+$ok = crypto_hash_sha256_update($ok, $msg);
+ok($ok, 'crypto_hash_sha256_update: got a result');
+
+$dig = crypto_hash_sha256_final($ok);
+$dig = sodium_bin2hex($dig);
+ok($dig eq "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", 'crypto_hash_sha256_final: result equal to reference');
+
+$dig = crypto_hash_sha256($msg);
+$dig = sodium_bin2hex($dig);
+ok($dig eq "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", 'crypto_hash_sha256: result equal to reference');
 
 done_testing();

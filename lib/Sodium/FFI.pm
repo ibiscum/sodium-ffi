@@ -13,14 +13,18 @@ use FFI::C;
 use Path::Tiny qw(path);
 use Sub::Util qw(set_subname);
 
-{
-    package Sodium::FFI::crypto_hash_sha256_state {
-	    FFI::C->struct(hash_sha256_state_t => [
-		    'state' => 'uint32[8]',
-	        'count'	=> 'uint64',
-		    'buf' => 'uint8[64]'
-	    ]);
-    }
+package Sodium::FFI::crypto_hash_sha256_state {
+    FFI::C->struct(hash_sha256_state_t => [
+	    'state' => 'uint32[8]',
+	    'count'	=> 'uint64',
+	    'buf' => 'uint8[64]'
+	]);
+}
+
+sub crypto_hash_sha256_state {
+    my $self = shift;
+    my %hash = @_;
+    return Sodium::FFI::crypto_hash_sha256_state->new(\%hash);
 }
 
 {
@@ -81,9 +85,7 @@ our @EXPORT_OK = qw(
    	crypto_auth_keygen
    	crypto_auth_hmacsha256_keygen
     crypto_auth_hmacsha512_keygen
-   	crypto_hash_sha256_init
-	crypto_hash_sha256
-	hash_sha256_state_t
+   	crypto_hash_sha256_state
 );
 
 # add the various C Constants
@@ -933,11 +935,45 @@ our %function = (
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
-    	            croak("Some internal error happened");
+                croak("Some internal error happened");
     	    }
             return($state);
 		}
 	],
+
+    # int
+    # crypto_hash_sha256_update(crypto_hash_sha256_state *state, const unsigned char *in, unsigned long long inlen)
+    'crypto_hash_sha256_update' => [
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+            my ($xsub, $state, $in) = @_;
+            my $inlen = length($in);
+
+            my $ret = $xsub->($state, $in, $inlen);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+        }
+    ],
+
+    # int
+    # crypto_hash_sha256_final(crypto_hash_sha256_state *state, unsigned char *out)
+    'crypto_hash_sha256_final' => [
+        ['opaque', 'string'] => 'int',
+        sub {
+            my ($xsub, $state) = @_;
+            my $out = "\0" x Sodium::FFI::crypto_hash_sha256_BYTES;
+
+            my $ret = $xsub->($state, $out);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($out);
+        }
+    ],
 
     # int
     # crypto_hash_sha256(unsigned char *out, const unsigned char *in, unsigned long long inlen)
