@@ -994,6 +994,77 @@ our %function = (
         }
     ],
 
+    # size_t
+	# crypto_hash_sha512_bytes(void)
+	'crypto_hash_sha512_bytes' => [
+		[] =>'size_t',
+		sub {
+			my ($xsub) = @_;
+			my $ret = $xsub->();
+			return $ret;
+		}
+	],
+
+    # size_t
+	# crypto_hash_sha512_statebytes(void)
+	'crypto_hash_sha512_statebytes' => [
+		[] =>'size_t',
+		sub {
+			my ($xsub) = @_;
+			my $ret = $xsub->();
+			return $ret;
+		}
+	],
+
+    # int
+	# crypto_hash_sha512_init(crypto_hash_sha512_state *state)
+	'crypto_hash_sha512_init' => [
+		['opaque'] => 'int',
+		sub {
+			my ($xsub, $state) = @_;
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
+    # int
+    # crypto_hash_sha512_update(crypto_hash_sha256_state *state, const unsigned char *in, unsigned long long inlen)
+    'crypto_hash_sha512_update' => [
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+            my ($xsub, $state, $in) = @_;
+            my $inlen = length($in);
+
+            my $ret = $xsub->($state, $in, $inlen);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+        }
+    ],
+
+    # int
+    # crypto_hash_sha512_final(crypto_hash_sha512_state *state, unsigned char *out)
+    'crypto_hash_sha512_final' => [
+        ['opaque', 'string'] => 'int',
+        sub {
+            my ($xsub, $state) = @_;
+            my $out = "\0" x Sodium::FFI::crypto_hash_sha512_BYTES;
+
+            my $ret = $xsub->($state, $out);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($out);
+        }
+    ],
+
     # int
     # crypto_hash_sha512(unsigned char *out, const unsigned char *in, unsigned long long inlen)
     'crypto_hash_sha512' => [
