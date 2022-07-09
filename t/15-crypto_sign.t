@@ -106,6 +106,12 @@ ok($ok, 'crypto_sign_ed25519_seedbytes: got a result');
 $ok = crypto_sign_ed25519_publickeybytes();
 ok($ok, 'crypto_sign_ed25519_publickeybytes: got a result');
 
+$ok = crypto_sign_ed25519_secretkeybytes();
+ok($ok, 'crypto_sign_ed25519_secretkeybytes: got a result');
+
+$ok = crypto_sign_ed25519_messagebytes_max();
+ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
+
 # combined, no seed
 {
     my ($pub, $priv) = crypto_sign_keypair();

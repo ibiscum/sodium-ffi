@@ -1985,6 +1985,7 @@ to encrypt and verify messages with a key.
     use Sodium::FFI qw(randombytes_buf crypto_auth crypto_auth_keygen);
     # First, let's create a key
     my $key = crypto_auth_keygen();
+
     # let's encrypt 12 bytes of random data... for fun
     my $message = randombytes_buf(12);
     my $encrypted_bytes = crypto_auth($message, $key);
@@ -1998,10 +1999,13 @@ function encrypts a message using a secret key and returns that message as a str
     use Sodium::FFI qw(randombytes_buf crypto_auth_verify crypto_auth_keygen);
 
     my $message = randombytes_buf(12);
+    
     # you'd really need to already have the key, but here
     my $key = crypto_auth_keygen();
+    
     # your encrypted data would come from a call to crypto_auth
     my $encrypted; # assume this is full of bytes
+    
     # let's verify
     my $boolean = crypto_auth_verify($encrypted, $message, $key);
     say $boolean;
@@ -2014,6 +2018,7 @@ secret key.
 
     use Sodium::FFI qw(crypto_auth_keygen);
     my $key = crypto_auth_keygen();
+    
     # this could also be written:
     use Sodium::FFI qw(randombytes_buf crypto_auth_KEYBYTES);
     my $key = randombytes_buf(crypto_auth_KEYBYTES);
