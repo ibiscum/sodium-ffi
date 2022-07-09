@@ -1505,6 +1505,100 @@ our %function = (
         }
     ],
 
+    # size_t
+    # crypto_sign_ed25519_bytes(void)
+    'crypto_sign_ed25519_bytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_ed25519_seedbytes(void)
+    'crypto_sign_ed25519_seedbytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_ed25519_publickeybytes(void)
+    'crypto_sign_ed25519_publickeybytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # size_t
+    # crypto_sign_ed25519_secretkeybytes(void)
+    'crypto_sign_ed25519_secretkeybytes' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+     # size_t
+    # crypto_sign_ed25519_messagebytes_max(void)
+    'crypto_sign_ed25519_messagebytes_max' => [
+        [] => 'size_t',
+        sub {
+            my ($xsub) = @_;
+            my $ret = $xsub->();
+	        return $ret;
+        }
+    ],
+
+    # int 
+    # crypto_sign_ed25519(unsigned char *sm,
+    #                     unsigned long long *smlen_p,
+    #                     const unsigned char *m,
+    #                     unsigned long long mlen,
+    #                     const unsigned char *sk)
+    'crypto_sign_ed25519' => [
+        ['string', 'size_t*', 'string', 'size_t', 'string'] => 'int',
+        sub {
+            my ($xsub, $msg, $key) = @_;
+    	    my $SIZE_MAX = Sodium::FFI::SIZE_MAX;
+    	    my $msg_len = length($msg);
+    	    my $key_len = length($key);
+    	    
+            unless ($key_len == Sodium::FFI::crypto_sign_ed25519_SECRETKEYBYTES) {
+    	        croak("Secret Key length must be crypto_sign_ed25519_SECRETKEYBYTES in length");
+    	    }
+    	    
+            if ($SIZE_MAX - $msg_len <= Sodium::FFI::crypto_sign_ed25519_BYTES) {
+    	        croak("Arithmetic overflow");
+    	    }
+    	    
+            my $real_len = 0;
+    	    my $signed_len = $msg_len + Sodium::FFI::crypto_sign_ed25519_BYTES;
+    	    my $signed = "\0" x $signed_len;
+    	    my $ret = $xsub->($signed, \$real_len, $msg, $msg_len, $key);
+    	    
+            if ($ret != 0) {
+    	        croak("Some internal error happened");
+    	    }
+    	    
+            if ($real_len >= $SIZE_MAX || $real_len > $signed_len) {
+    	        croak("Arithmetic overflow");
+    	    }
+    	    
+            return substr($signed, 0, $real_len);
+    	}
+    ],
+
     # void
     # randombytes_buf(void * const buf, const size_t size)
     'randombytes_buf' => [
