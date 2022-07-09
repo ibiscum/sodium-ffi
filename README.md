@@ -1,4 +1,5 @@
 [![linux](https://github.com/ibiscum/sodium-ffi/actions/workflows/linux.yml/badge.svg)](https://github.com/ibiscum/sodium-ffi/actions/workflows/linux.yml)
+[![macos](https://github.com/ibiscum/sodium-ffi/actions/workflows/macos.yml/badge.svg)](https://github.com/ibiscum/sodium-ffi/actions/workflows/macos.yml)
 
 # NAME
 
