@@ -12,6 +12,8 @@ use FFI::Platypus;
 use FFI::C;
 use Path::Tiny qw(path);
 use Sub::Util qw(set_subname);
+use FFI::Platypus::Buffer qw( scalar_to_buffer buffer_to_scalar );
+use FFI::Platypus::Memory qw( malloc free );
 
 package Sodium::FFI::crypto_hash_sha256_state {
     FFI::C->struct(hash_sha256_state_t => [
@@ -349,8 +351,54 @@ our %function = (
     # int
     # crypto_auth_hmacsha256_init(crypto_auth_hmacsha256_state *state, const unsigned char *key, size_t keylen)
     'crypto_auth_hmacsha256_init' => [
-        [] => 'int',
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+       	    my ($xsub, $key) = @_;
+            my $key_len = length($key);
 
+            my $state = malloc(crypto_auth_hmacsha256_statebytes());
+            my $ret = $xsub->($state, $key, $key_len);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+
+            free $state;
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha256_update(crypto_auth_hmacsha256_state *state, const unsigned char *in, unsigned long long inlen)
+    'crypto_auth_hmacsha256_update' => [
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+            my ($xsub, $state, $in) = @_;
+            my $in_len = length($in);
+            my $ret = $xsub->($state, $in, $in_len);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha256_final(crypto_auth_hmacsha256_state *state, unsigned char *out)
+    'crypto_auth_hmacsha256_final' => [
+        ['opaque', 'string'] => 'int',
+        sub {
+            my ($xsub, $state) = @_;
+            my $out = "\0" x Sodium::FFI::crypto_auth_hmacsha256_BYTES;
+
+            my $ret = $xsub->($state, $out);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($out);
+        }
     ],
 
     # int
@@ -409,6 +457,42 @@ our %function = (
             my ($xsub) = @_;
             my $ret = $xsub->();
 	        return $ret;
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha512_init(crypto_auth_hmacsha512_state *state, const unsigned char *key, size_t keylen)
+    'crypto_auth_hmacsha512_init' => [
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+       	    my ($xsub, $key) = @_;
+            my $key_len = length($key);
+
+            my $state = malloc(crypto_auth_hmacsha512_statebytes());
+            my $ret = $xsub->($state, $key, $key_len);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+
+            free $state;
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha512_update(crypto_auth_hmacsha512_state *state, const unsigned char *in, unsigned long long inlen)
+    'crypto_auth_hmacsha512_update' => [
+        ['opaque', 'string', 'size_t'] => 'int',
+        sub {
+            my ($xsub, $state, $in) = @_;
+            my $in_len = length($in);
+            my $ret = $xsub->($state, $in, $in_len);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
         }
     ],
 
@@ -931,13 +1015,17 @@ our %function = (
 	'crypto_hash_sha256_init' => [
 		['opaque'] => 'int',
 		sub {
-			my ($xsub, $state) = @_;
+			my ($xsub) = @_;
+
+            my $state = malloc(crypto_hash_sha256_statebytes());
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
             return($state);
+
+            free $state;
 		}
 	],
 
@@ -1021,13 +1109,17 @@ our %function = (
 	'crypto_hash_sha512_init' => [
 		['opaque'] => 'int',
 		sub {
-			my ($xsub, $state) = @_;
+			my ($xsub) = @_;
+
+            my $state = malloc(crypto_hash_sha512_statebytes());
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
             return($state);
+
+            free $state;
 		}
 	],
 
@@ -1037,9 +1129,9 @@ our %function = (
         ['opaque', 'string', 'size_t'] => 'int',
         sub {
             my ($xsub, $state, $in) = @_;
-            my $inlen = length($in);
+            my $in_len = length($in);
 
-            my $ret = $xsub->($state, $in, $inlen);
+            my $ret = $xsub->($state, $in, $in_len);
 
             if ($ret != 0) {
                 croak("Some internal error happened");
@@ -1192,7 +1284,7 @@ our %function = (
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
-    	            croak("Some internal error happened");
+                croak("Some internal error happened");
     	    }
             return($state);
 		}
