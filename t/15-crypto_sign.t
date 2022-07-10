@@ -37,14 +37,14 @@ use Sodium::FFI qw(
     crypto_sign_ed25519_secretkeybytes
     crypto_sign_ed25519_messagebytes_max
     crypto_sign_ed25519
+    crypto_sign_ed25519_open
+    crypto_sign_ed25519_detached
+    crypto_sign_ed25519_verify_detached
     randombytes_buf
     sodium_hex2bin
     sodium_bin2hex
 );
 
-#    crypto_sign_ed25519_open
-#    crypto_sign_ed25519_detached
-#    crypto_sign_ed25519_verify_detached
 #    crypto_sign_ed25519_keypair
 #    crypto_sign_ed25519_seed_keypair
 #    crypto_sign_ed25519_pk_to_curve25519
@@ -172,6 +172,9 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
     my $sig_ref = "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b";
 
     my $sig = crypto_sign_detached($msg, $sk);
+    my $verified = crypto_sign_verify_detached($sig, $msg, $pk);
+    ok($verified, 'crypto_sign_verify_detached: message verified');
+
     $sig = sodium_bin2hex($sig);
     ok($sig eq $sig_ref, 'crypto_sign_detached: ED25519 TEST 1 RFC 8032');
 }
@@ -190,6 +193,9 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
     my $sig_ref = "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00";
 
     my $sig = crypto_sign_detached($msg, $sk);
+    my $verified = crypto_sign_verify_detached($sig, $msg, $pk);
+    ok($verified, 'crypto_sign_verify_detached: message verified');
+
     $sig = sodium_bin2hex($sig);
     ok($sig eq $sig_ref, 'crypto_sign_detached: ED25519 TEST 2 RFC 8032');
 }
@@ -208,6 +214,9 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
     my $sig_ref = "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a";
 
     my $sig = crypto_sign_detached($msg, $sk);
+    my $verified = crypto_sign_verify_detached($sig, $msg, $pk);
+    ok($verified, 'crypto_sign_verify_detached: message verified');
+
     $sig = sodium_bin2hex($sig);
     ok($sig eq $sig_ref, 'crypto_sign_detached: ED25519 TEST 3 RFC 8032');
 }
@@ -226,8 +235,29 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
     my $sig_ref = "dc2a4459e7369633a52b1bf277839a00201009a3efbf3ecb69bea2186c26b58909351fc9ac90b3ecfdfbc7c66431e0303dca179c138ac17ad9bef1177331a704";
 
     my $sig = crypto_sign_detached($msg, $sk);
+    my $verified = crypto_sign_verify_detached($sig, $msg, $pk);
+    ok($verified, 'crypto_sign_verify_detached: message verified');
+
     $sig = sodium_bin2hex($sig);
     ok($sig eq $sig_ref, 'crypto_sign_detached: ED25519 TEST SHA(abc) RFC 8032');
+}
+
+# ED25519 TEST 1 RFC 8032
+{
+    my $pk = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
+    my $sk = "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60" . $pk;
+
+    $sk = sodium_hex2bin($sk);
+    $pk = sodium_hex2bin($pk);
+
+    my $msg = "";
+    my $sig_ref = "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b";
+
+    my $sig = crypto_sign_ed25519_detached($msg, $sk);
+    my $verified = crypto_sign_ed25519_verify_detached($sig, $msg, $pk);
+    ok($verified, 'crypto_sign_ed25519_verify_detached: message verified');
+    $sig = sodium_bin2hex($sig);
+    ok($sig eq $sig_ref, 'crypto_sign_ed25519_detached: ED25519 TEST 1 RFC 8032');
 }
 
 done_testing();
