@@ -1,6 +1,9 @@
 use strict;
 use warnings;
 use Test::More;
+use Data::Dumper;
+use FFI::Platypus::Buffer qw( scalar_to_buffer buffer_to_scalar );
+use FFI::Platypus::Memory qw( malloc free );
 use Sodium::FFI qw(
     crypto_sign_BYTES
     crypto_sign_SEEDBYTES
@@ -8,11 +11,7 @@ use Sodium::FFI qw(
     crypto_sign_SECRETKEYBYTES
     crypto_sign_MESSAGEBYTES_MAX
     crypto_sign_PRIMITIVE
-    crypto_sign_ed25519_BYTES
-    crypto_sign_ed25519_SEEDBYTES
-    crypto_sign_ed25519_PUBLICKEYBYTES
-    crypto_sign_ed25519_SECRETKEYBYTES
-    crypto_sign_ed25519_MESSAGEBYTES_MAX
+    
     crypto_sign_statebytes
     crypto_sign_bytes
     crypto_sign_seedbytes
@@ -30,6 +29,13 @@ use Sodium::FFI qw(
     crypto_sign_update
     crypto_sign_final_create
     crypto_sign_final_verify
+    
+    crypto_sign_ed25519_BYTES
+    crypto_sign_ed25519_SEEDBYTES
+    crypto_sign_ed25519_PUBLICKEYBYTES
+    crypto_sign_ed25519_SECRETKEYBYTES
+    crypto_sign_ed25519_MESSAGEBYTES_MAX
+
     crypto_sign_ed25519ph_statebytes
     crypto_sign_ed25519_bytes
     crypto_sign_ed25519_seedbytes
@@ -40,6 +46,10 @@ use Sodium::FFI qw(
     crypto_sign_ed25519_open
     crypto_sign_ed25519_detached
     crypto_sign_ed25519_verify_detached
+    crypto_sign_ed25519ph_init
+    crypto_sign_ed25519ph_update
+    crypto_sign_ed25519ph_final_create
+
     randombytes_buf
     sodium_hex2bin
     sodium_bin2hex
@@ -51,9 +61,8 @@ use Sodium::FFI qw(
 #    crypto_sign_ed25519_sk_to_curve25519
 #    crypto_sign_ed25519_sk_to_seed
 #    crypto_sign_ed25519_sk_to_pk
-#    crypto_sign_ed25519ph_init
-#    crypto_sign_ed25519ph_update
-#    crypto_sign_ed25519ph_final_create
+#    
+#    
 #    crypto_sign_ed25519ph_final_verify
 
 ok(crypto_sign_BYTES, 'crypto_sign_BYTES: got the constant');
@@ -98,6 +107,7 @@ ok($ok, 'crypto_sign_primitive: got a result');
 
 $ok = crypto_sign_ed25519ph_statebytes();
 ok($ok, 'crypto_sign_ed25519ph_statebytes: got a result');
+print $ok . "\n";
 
 $ok = crypto_sign_ed25519_bytes();
 ok($ok, 'crypto_sign_ed25519_bytes: got a result');
@@ -165,8 +175,8 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
     my $pk = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
     my $sk = "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60" . $pk;
 
-    $sk = sodium_hex2bin($sk);
     $pk = sodium_hex2bin($pk);
+    $sk = sodium_hex2bin($sk);
 
     my $msg = "";
     my $sig_ref = "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b";
@@ -177,6 +187,62 @@ ok($ok, 'crypto_sign_ed25519_messagebytes_max: got a result');
 
     $sig = sodium_bin2hex($sig);
     ok($sig eq $sig_ref, 'crypto_sign_detached: ED25519 TEST 1 RFC 8032');
+}
+
+# ED25519ph TEST 1 RFC 8032 with init, update and create final
+{
+    my $pk = "ec172b93ad5e563bf4932c70e1245034c35467ef2efd4d64ebf819683467e2bf";
+    my $sk = "833fe62409237b9d62ec77587520911e9a759cec1d19755b7da901b96dca3d42" . $pk;
+
+    $pk = sodium_hex2bin($pk);
+    $sk = sodium_hex2bin($sk);
+
+    my $msg = "616263";
+    $msg = sodium_hex2bin($msg);
+
+    my $sig_ref = "98a70222f0b8121aa9d30f813d683f809e462b469c7ff87639499bb94e6dae4131f85042463c2a355a2003d062adf5aaa10b8c61e636062aaad11c2a26083406";
+
+    my $state = malloc(crypto_sign_statebytes());
+    
+    my $state_init = crypto_sign_init($state);
+    ok($state_init, 'crypto_sign_init: ED25519 TEST 1 RFC 8032 step init');
+    
+    my $state_update = crypto_sign_update($state_init, $msg);
+    ok($state_update, 'crypto_sign_update: ED25519 TEST 1 RFC 8032 step update');
+    
+    my $sig = crypto_sign_final_create($state_update, $sk);
+    $sig = sodium_bin2hex($sig);
+    ok($sig eq $sig_ref, 'crypto_sign_final_create: ED25519PH TEST abc RFC 8032');
+
+    free $state;
+}
+
+# ED25519ph TEST 1 RFC 8032 with init, update and create final
+{
+    my $pk = "ec172b93ad5e563bf4932c70e1245034c35467ef2efd4d64ebf819683467e2bf";
+    # my $sk = "833fe62409237b9d62ec77587520911e9a759cec1d19755b7da901b96dca3d42" . $pk;
+
+    $pk = sodium_hex2bin($pk);
+    # $sk = sodium_hex2bin($sk);
+
+    my $msg = "616263";
+    $msg = sodium_hex2bin($msg);
+
+    my $sig_ref = "98a70222f0b8121aa9d30f813d683f809e462b469c7ff87639499bb94e6dae4131f85042463c2a355a2003d062adf5aaa10b8c61e636062aaad11c2a26083406";
+    $sig_ref = sodium_hex2bin($sig_ref);
+
+    my $state = malloc(crypto_sign_statebytes());
+    
+    my $state_init = crypto_sign_init($state);
+    ok($state_init, 'crypto_sign_init: ED25519 TEST 1 RFC 8032 step init');
+    
+    my $state_update = crypto_sign_update($state_init, $msg);
+    ok($state_update, 'crypto_sign_update: ED25519 TEST 1 RFC 8032 step update');
+    
+    my $verify = crypto_sign_final_verify($state_update, $sig_ref, $pk);
+    ok($verify, 'crypto_sign_final_verify: ED25519PH TEST abc RFC 8032');
+
+    free $state;
 }
 
 # ED25519 TEST 2 RFC 8032

@@ -269,7 +269,10 @@ our %function = (
     ],
     
 	# int
-	# crypto_auth_verify(const unsigned char *h, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
+	# crypto_auth_verify(const unsigned char *h, 
+    #   const unsigned char *in, 
+    #   unsigned long long inlen, 
+    #   const unsigned char *k);
     'crypto_auth_verify' => [
        	['string', 'string', 'size_t', 'string'] => 'int',
        	sub {
@@ -349,43 +352,48 @@ our %function = (
     ],
 
     # int
-    # crypto_auth_hmacsha256_init(crypto_auth_hmacsha256_state *state, const unsigned char *key, size_t keylen)
+    # crypto_auth_hmacsha256_init(crypto_auth_hmacsha256_state *state, 
+    #   const unsigned char *key, 
+    #   size_t keylen)
     'crypto_auth_hmacsha256_init' => [
         ['opaque', 'string', 'size_t'] => 'int',
         sub {
-       	    my ($xsub, $key) = @_;
+       	    my ($xsub, $state, $key) = @_;
             my $key_len = length($key);
 
-            my $state = malloc(crypto_auth_hmacsha256_statebytes());
             my $ret = $xsub->($state, $key, $key_len);
 
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
-            return($state);
 
-            free $state;
+            return($state);
         }
     ],
 
     # int
-    # crypto_auth_hmacsha256_update(crypto_auth_hmacsha256_state *state, const unsigned char *in, unsigned long long inlen)
+    # crypto_auth_hmacsha256_update(crypto_auth_hmacsha256_state *state, 
+    #   const unsigned char *in, 
+    #   unsigned long long inlen)
     'crypto_auth_hmacsha256_update' => [
         ['opaque', 'string', 'size_t'] => 'int',
         sub {
             my ($xsub, $state, $in) = @_;
             my $in_len = length($in);
+            
             my $ret = $xsub->($state, $in, $in_len);
 
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
+
             return($state);
         }
     ],
 
     # int
-    # crypto_auth_hmacsha256_final(crypto_auth_hmacsha256_state *state, unsigned char *out)
+    # crypto_auth_hmacsha256_final(crypto_auth_hmacsha256_state *state,
+    #   unsigned char *out)
     'crypto_auth_hmacsha256_final' => [
         ['opaque', 'string'] => 'int',
         sub {
@@ -402,7 +410,10 @@ our %function = (
     ],
 
     # int
-	# crypto_auth_hmacsha256_verify(const unsigned char *h, const unsigned char *in, unsigned long long inlen, const unsigned char *k);
+	# crypto_auth_hmacsha256_verify(const unsigned char *h, 
+    #   const unsigned char *in,
+    #   unsigned long long inlen,
+    #   const unsigned char *k);
     'crypto_auth_hmacsha256_verify' => [
        	['string', 'string', 'size_t', 'string'] => 'int',
        	sub {
@@ -461,27 +472,29 @@ our %function = (
     ],
 
     # int
-    # crypto_auth_hmacsha512_init(crypto_auth_hmacsha512_state *state, const unsigned char *key, size_t keylen)
+    # crypto_auth_hmacsha512_init(crypto_auth_hmacsha512_state *state, 
+    #   const unsigned char *key, 
+    #   size_t keylen)
     'crypto_auth_hmacsha512_init' => [
         ['opaque', 'string', 'size_t'] => 'int',
         sub {
-       	    my ($xsub, $key) = @_;
+       	    my ($xsub, $state, $key) = @_;
             my $key_len = length($key);
 
-            my $state = malloc(crypto_auth_hmacsha512_statebytes());
             my $ret = $xsub->($state, $key, $key_len);
 
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
-            return($state);
 
-            free $state;
+            return($state);
         }
     ],
 
     # int
-    # crypto_auth_hmacsha512_update(crypto_auth_hmacsha512_state *state, const unsigned char *in, unsigned long long inlen)
+    # crypto_auth_hmacsha512_update(crypto_auth_hmacsha512_state *state,
+    #   const unsigned char *in,
+    #   unsigned long long inlen)
     'crypto_auth_hmacsha512_update' => [
         ['opaque', 'string', 'size_t'] => 'int',
         sub {
@@ -492,7 +505,28 @@ our %function = (
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
+
             return($state);
+        }
+    ],
+
+    # int
+    # crypto_auth_hmacsha512_final(crypto_auth_hmacsha512_state *state,
+    #   unsigned char *out)
+    'crypto_auth_hmacsha512_final' => [
+        ['opaque', 'string'] => 'int',
+        sub {
+            my ($xsub, $state) = @_;
+
+            my $out = "\0" x Sodium::FFI::crypto_auth_hmacsha512_BYTES;
+
+            my $ret = $xsub->($state, $out);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+
+            return($out);
         }
     ],
 
@@ -1015,17 +1049,13 @@ our %function = (
 	'crypto_hash_sha256_init' => [
 		['opaque'] => 'int',
 		sub {
-			my ($xsub) = @_;
-
-            my $state = malloc(crypto_hash_sha256_statebytes());
+			my ($xsub, $state) = @_;
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
             return($state);
-
-            free $state;
 		}
 	],
 
@@ -1109,17 +1139,13 @@ our %function = (
 	'crypto_hash_sha512_init' => [
 		['opaque'] => 'int',
 		sub {
-			my ($xsub) = @_;
-
-            my $state = malloc(crypto_hash_sha512_statebytes());
+			my ($xsub, $state) = @_;
 
             my $ret = $xsub->($state);
             if ($ret != 0) {
                 croak("Some internal error happened");
     	    }
             return($state);
-
-            free $state;
 		}
 	],
 
@@ -1291,47 +1317,60 @@ our %function = (
 	],
 
     # int
-	# crypto_sign_update(crypto_sign_state *state, const unsigned char *m, unsigned long long mlen)
+	# crypto_sign_update(crypto_sign_state *state, 
+    #   const unsigned char *m, 
+    #   unsigned long long mlen)
 	'crypto_sign_update' => [
 		['opaque', 'string', 'size_t'] => 'int',
 		sub {
-			my ($xsub, $state, $msg, $msg_len) = @_;
+			my ($xsub, $state, $msg) = @_;
+            my $msg_len = length($msg);
 
-            my $ret = $xsub->($state);
+            my $ret = $xsub->($state, $msg, $msg_len);
             if ($ret != 0) {
-    	            croak("Some internal error happened");
+                croak("Some internal error happened");
     	    }
             return($state);
 		}
 	],
 
     # int 
-    # crypto_sign_final_create(crypto_sign_state *state, unsigned char *sig, unsigned long long *siglen_p, const unsigned char *sk)
+    # crypto_sign_final_create(crypto_sign_state *state, 
+    #   unsigned char *sig,
+    #   unsigned long long *siglen_p, 
+    #   const unsigned char *sk)
     'crypto_sign_final_create' => [
 		['opaque', 'string', 'size_t*', 'string'] => 'int',
 		sub {
-			my ($xsub, $state, $sig, $siglen_p, $sk) = @_;
+			my ($xsub, $state, $sk) = @_;
 
-            my $ret = $xsub->($state);
+            my $sig = "\0" x crypto_sign_bytes();
+            my $real_len = 0;
+
+            my $ret = $xsub->($state, $sig, \$real_len, $sk);
             if ($ret != 0) {
-    	            croak("Some internal error happened");
+    	        croak("Some internal error happened");
     	    }
-            return($state);
+            return($sig);
 		}
 	],
 
     # int 
-    # crypto_sign_final_verify(crypto_sign_state *state, const unsigned char *sig, const unsigned char *pk)
+    # crypto_sign_final_verify(crypto_sign_state *state, 
+    #   const unsigned char *sig, 
+    #   const unsigned char *pk)
     'crypto_sign_final_verify' => [
-		['opaque', 'string', 'size_t'] => 'int',
+		['opaque', 'string', 'string'] => 'int',
 		sub {
 			my ($xsub, $state, $sig, $pk) = @_;
 
-            my $ret = $xsub->($state);
+            my $ret = $xsub->($state, $sig, $pk);
             if ($ret != 0) {
     	            croak("Some internal error happened");
     	    }
-            return($state);
+
+            return 1 if ($ret == 0);
+            return 0;
 		}
 	],
 
@@ -1376,9 +1415,11 @@ our %function = (
     ],
     
     # int
-    # crypto_sign(unsigned char *sm, unsigned long long *smlen_p,
-    #     const unsigned char *m, unsigned long long mlen,
-    #     const unsigned char *sk);
+    # crypto_sign(unsigned char *sm,
+    #   unsigned long long *smlen_p,
+    #   const unsigned char *m,
+    #   unsigned long long mlen,
+    #   const unsigned char *sk);
     'crypto_sign' => [
         ['string', 'size_t*', 'string', 'size_t', 'string'] => 'int',
         sub {
@@ -1487,9 +1528,11 @@ our %function = (
             unless ($sig_len == Sodium::FFI::crypto_sign_BYTES) {
                 croak("Signature length must be crypto_sign_BYTES in length");
             }
+
             unless ($key_len == Sodium::FFI::crypto_sign_PUBLICKEYBYTES) {
                 croak("Public Key length must be crypto_sign_PUBLICKEYBYTES in length");
             }
+
             my $ret = $xsub->($sig, $msg, $msg_len, $key);
             return 1 if ($ret == 0);
             return 0;
@@ -1689,6 +1732,67 @@ our %function = (
             return 0;
         }
     ],
+
+    # int 
+    # crypto_sign_ed25519ph_init(crypto_sign_ed25519ph_state *state)
+    'crypto_sign_ed25519ph_init' => [
+		['opaque'] => 'int',
+		sub {
+			my ($xsub) = @_;
+
+            my $state = malloc((crypto_sign_ed25519ph_statebytes()));
+
+            my $ret = $xsub->($state);
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+		}
+	],
+
+    # int 
+    # crypto_sign_ed25519ph_update(crypto_sign_ed25519ph_state *state,
+    #   const unsigned char *m,
+    #   unsigned long long mlen)
+    'crypto_sign_ed25519ph_update' => [
+		['opaque', 'string', 'size_t'] => 'int',
+		sub {
+			my ($xsub, $state, $msg) = @_;
+            my $msg_len = length($msg);
+
+            my $ret = $xsub->($state, $msg, $msg_len);
+
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            return($state);
+
+            free $state;
+		}
+	],
+
+    # int 
+    # crypto_sign_ed25519ph_final_create(crypto_sign_ed25519ph_state *state,
+    #   unsigned char *sig,
+    #   unsigned long long *siglen_p,
+    #   const unsigned char *sk)
+    'crypto_sign_ed25519ph_final_create' => [
+		['opaque', 'string', 'size_t*', 'string'] => 'int',
+		sub {
+			my ($xsub, $state, $sk) = @_;
+
+            my $sig = malloc(crypto_sign_ed25519_bytes());
+            my $real_len = 0;
+
+            my $ret = $xsub->($state, $sig, \$real_len, $sk);
+            if ($ret != 0) {
+                croak("Some internal error happened");
+    	    }
+            
+            return($sig);
+		}
+	],
+
 
     # void
     # randombytes_buf(void * const buf, const size_t size)
